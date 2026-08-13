@@ -21,9 +21,9 @@ st.set_page_config(page_title="Student Performance ML Classifier", layout="wide"
 st.title("🎓 Student Performance Classification Web App")
 st.markdown("Predict whether a student achieves **Above Average Academic Performance** (`G3 >= 12`) based on demographic, social, and study habits.")
 
-# Sidebar - Model Selection & File Upload
-st.sidebar.header("1. Upload Test Dataset")
-uploaded_file = st.sidebar.file_uploader("Upload test_data.csv", type=["csv"])
+# Sidebar - Dataset Source & Model Selection
+st.sidebar.header("1. Dataset Selection")
+uploaded_file = st.sidebar.file_uploader("Upload custom CSV (Optional)", type=["csv"])
 
 st.sidebar.header("2. Select Machine Learning Model")
 model_options = {
@@ -36,13 +36,25 @@ model_options = {
 
 selected_model_name = st.sidebar.selectbox("Choose Model", list(model_options.keys()))
 
+# Determine data source: uploaded file takes priority, otherwise fallback to local test_data.csv
+data = None
+
 if uploaded_file is not None:
     data = pd.read_csv(uploaded_file)
-    st.subheader("📊 Preview of Uploaded Dataset")
+    st.sidebar.success("Custom CSV uploaded successfully!")
+elif os.path.exists("test_data.csv"):
+    data = pd.read_csv("test_data.csv")
+    st.sidebar.info("Using default `test_data.csv` from repository.")
+else:
+    st.error("No dataset available. Please upload `test_data.csv` using the sidebar uploader.")
+
+# If dataset is loaded, proceed with predictions & evaluation
+if data is not None:
+    st.subheader("📊 Dataset Preview")
     st.dataframe(data.head(5), use_container_width=True)
     
     if "target" not in data.columns:
-        st.error("Error: The uploaded CSV must contain the 'target' column.")
+        st.error("Error: The dataset must contain the 'target' column.")
     else:
         X_test = data.drop(columns=["target"])
         y_test = data["target"]
@@ -54,7 +66,7 @@ if uploaded_file is not None:
             y_pred = model.predict(X_test)
             y_prob = model.predict_proba(X_test)[:, 1]
             
-            # Compute Metrics
+            # Compute Evaluation Metrics
             acc = accuracy_score(y_test, y_pred)
             auc = roc_auc_score(y_test, y_prob)
             prec = precision_score(y_test, y_pred, zero_division=0)
@@ -65,7 +77,7 @@ if uploaded_file is not None:
             st.divider()
             st.subheader(f"📈 Evaluation Metrics: {selected_model_name}")
             
-            # Display metrics in columns
+            # Metric Columns
             col1, col2, col3 = st.columns(3)
             col1.metric("Accuracy", f"{acc:.4f}")
             col1.metric("Recall", f"{rec:.4f}")
@@ -77,6 +89,7 @@ if uploaded_file is not None:
             st.divider()
             col_cm, col_cr = st.columns(2)
             
+            # Confusion Matrix Visualization
             with col_cm:
                 st.subheader("🧩 Confusion Matrix")
                 cm = confusion_matrix(y_test, y_pred)
@@ -88,6 +101,7 @@ if uploaded_file is not None:
                 ax.set_ylabel("True Label")
                 st.pyplot(fig)
                 
+            # Detailed Classification Report
             with col_cr:
                 st.subheader("📋 Classification Report")
                 report = classification_report(y_test, y_pred, output_dict=True)
@@ -95,5 +109,3 @@ if uploaded_file is not None:
                 st.dataframe(report_df.style.format("{:.4f}"), use_container_width=True)
         else:
             st.error(f"Model file not found at `{model_path}`. Please run `train_models.py` first.")
-else:
-    st.info("👆 Please upload `test_data.csv` from the sidebar to evaluate the models.")
