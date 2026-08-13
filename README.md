@@ -12,7 +12,7 @@ Predicting student academic success early in a course is critical for educationa
 - **Feature Types:** Attributes include student demographics (age, sex, address), family background (parental education/jobs, family support), study habits (study time, past failures, travel time), and social habits (free time, alcohol consumption, absences).
 
 ## c. GitHub Repository Link
-- **GitHub Repo:** https://github.com/<YOUR_GITHUB_USERNAME>/<YOUR_REPOSITORY_NAME>
+- **GitHub Repo:** [https://github.com/<YOUR_GITHUB_USERNAME>/<YOUR_REPOSITORY_NAME>](https://github.com/2025da04002/2025DA04002_ML_Assingment_2)
 
 ## d. Models Used & Comparison Table
 
